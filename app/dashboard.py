@@ -1,5 +1,13 @@
 import streamlit as st
 import requests
+import os
+from dotenv import load_dotenv
+
+# Carrega variáveis do .env
+load_dotenv()
+
+# Define o endpoint da API via variável de ambiente
+API_HOST = os.getenv("API_HOST", "http://api:8000")
 
 st.markdown("## 🧾 Ficha Clínica do Paciente")
 st.markdown("Preencha os dados abaixo para gerar o diagnóstico.")
@@ -57,7 +65,7 @@ if st.button("📤 Enviar para Diagnóstico"):
     }
 
     try:
-        resposta = requests.post("http://127.0.0.1:8000/predict", json=dados)
+        resposta = requests.post(f"{API_HOST}/predict", json=dados)
         resultado = resposta.json()
 
         if resultado["doenca_cardiaca"]:
@@ -67,4 +75,3 @@ if st.button("📤 Enviar para Diagnóstico"):
 
     except Exception as e:
         st.exception(f"Erro ao conectar com a API: {e}")
-
