@@ -1,18 +1,21 @@
-# Usa imagem oficial do Python
+# Usa imagem base leve do Python
 FROM python:3.11-slim
 
+# Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copia apenas o que é necessário
-COPY requirements.txt ./
+# Copia apenas o arquivo de dependências
+COPY requirements.txt .
+
+# Instala as dependências
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Copia o restante do projeto, incluindo .env
+# Copia o restante do código do dashboard
 COPY . .
 
-# Expõe a porta do Streamlit
+# Expõe a porta padrão do Streamlit
 EXPOSE 8501
 
-# Comando para iniciar a interface
+# Comando para iniciar o app Streamlit
 CMD ["streamlit", "run", "dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]

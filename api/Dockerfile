@@ -4,14 +4,14 @@ FROM python:3.11-slim
 # Define diretório de trabalho
 WORKDIR /app
 
-# Copia apenas o arquivo de dependências primeiro (melhora o cache)
-COPY requirements.txt ./
+# Copia o arquivo de dependências (já dentro de api/)
+COPY requirements.txt ./requirements.txt
 
 # Instala dependências
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Copia o restante do projeto
+# Copia o restante do projeto da API
 COPY . .
 
 # Expõe a porta da API

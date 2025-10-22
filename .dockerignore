@@ -1,7 +1,11 @@
+# Ignora caches e notebooks temporários
 __pycache__/
 *.ipynb
 *.csv
-*.pkl
 .env.prod
 .env.dev
 tests/
+
+# Mantém o modelo de ML
+!model/
+!model/random_forest.pkl
