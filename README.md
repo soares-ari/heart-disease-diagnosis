@@ -1,77 +1,99 @@
-# Diagnóstico de Doença Cardíaca com Machine Learning
 
-Este projeto aplica o ciclo completo de Machine Learning — da análise exploratória ao deploy — para construir uma solução preditiva capaz de identificar a presença de doença cardíaca com base em variáveis clínicas.
+# ❤️ Diagnóstico de Doença Cardíaca com Machine Learning
+
+Este projeto implementa um pipeline completo de *Machine Learning* — da análise exploratória ao deploy em produção — para construir uma solução preditiva capaz de identificar a presença de doença cardíaca com base em variáveis clínicas.
 
 ---
 
 ## 🎯 Objetivo
 
-Desenvolver um modelo supervisionado que receba dados clínicos e retorne a probabilidade de presença de doença cardíaca. A solução será disponibilizada via API e interface interativa.
+Desenvolver um modelo supervisionado que receba dados clínicos e retorne a probabilidade de presença de doença cardíaca.  
+A solução está disponível via **API (FastAPI)** e **interface interativa (Streamlit)**, ambas hospedadas em um ambiente **containerizado (Docker)** e servidas por **Nginx com HTTPS** na **AWS EC2**.
 
 ---
 
 ## 📦 Dataset
 
-- Fonte: [Heart Disease Dataset - Kaggle](https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset)
-- Variáveis: idade, sexo, pressão arterial, colesterol, eletrocardiograma, frequência cardíaca, entre outras
-- Target: presença (`1`) ou ausência (`0`) de doença cardíaca
+- **Fonte:** [Heart Disease Dataset - Kaggle](https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset)  
+- **Variáveis:** idade, sexo, pressão arterial, colesterol, eletrocardiograma, frequência cardíaca, entre outras  
+- **Target:** presença (`1`) ou ausência (`0`) de doença cardíaca  
 
 ---
 
 ## 🧪 Ciclo de Vida Aplicado
 
-1. **Análise Exploratória** (`01_eda.ipynb`)
-2. **Modelagem e Avaliação** (`02_modelagem.ipynb`)
-3. **Deploy via API (FastAPI)** (`api/main.py`)
-4. **Interface interativa (Streamlit)** (`app/dashboard.py`)
-5. **Containerização com Docker**
+1. **Análise Exploratória** (`notebooks/01_eda.ipynb`)
+2. **Modelagem e Avaliação** (`notebooks/02_modelagem.ipynb`)
+3. **Treinamento e Exportação do Modelo** (`model/random_forest.pkl`)
+4. **Deploy da API** com **FastAPI** (`api/main.py`)
+5. **Interface Interativa** com **Streamlit** (`app/dashboard.py`)
+6. **Containerização e Orquestração** com **Docker + Docker Compose**
+7. **Serviço Web** com **Nginx** e **HTTPS automático (Let’s Encrypt)**
+8. **Infraestrutura** em **AWS EC2 (Ubuntu 24.04 + Elastic IP)**
 
 ---
 
-## 🧠 Modelos Testados
+## 🧠 Modelos Avaliados
 
-- Regressão Logística
-- Árvore de Decisão
-- Random Forest ✅
-- SVM
-- KNN
-- MLP
+- Regressão Logística  
+- Árvore de Decisão  
+- Random Forest ✅  
+- SVM  
+- KNN  
+- MLP  
 
-> O modelo **Random Forest** foi selecionado para deploy por apresentar desempenho perfeito, alta robustez e interpretabilidade.
+> O modelo **Random Forest** foi selecionado para deploy por apresentar o melhor equilíbrio entre acurácia, robustez e interpretabilidade.
 
 ---
 
 ## 🚀 Tecnologias Utilizadas
 
-- Python 3.10+
-- Pandas, Scikit-Learn, Matplotlib, Seaborn
-- FastAPI
-- Streamlit
-- Docker
-- Git + GitHub
+| Categoria | Ferramentas |
+|------------|-------------|
+| Linguagem | Python 3.11 |
+| Análise e Modelagem | Pandas, NumPy, Scikit-Learn, Matplotlib, Seaborn |
+| API | FastAPI + Uvicorn |
+| Frontend | Streamlit |
+| Infraestrutura | Docker, Docker Compose |
+| Servidor Web | Nginx (proxy reverso) |
+| Certificados | Let’s Encrypt (Certbot) |
+| Cloud | AWS EC2 (Ubuntu, Elastic IP) |
+| Controle de Versão | Git + GitHub |
 
 ---
 
 ## 📁 Estrutura do Projeto
 
-heart-disease-diagnosis/ 
-├── data/ 
-├── notebooks/ 
-│ ├── 01_eda.ipynb 
-│ └── 02_modelagem.ipynb 
-├── src/ 
-├── api/ 
-│ └── main.py 
-├── app/ 
-│ └── dashboard.py 
-├── Dockerfile 
-├── requirements.txt 
+heart-disease-diagnosis/
+│
+├── api/
+│   ├── main.py               # API FastAPI
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── dashboard/
+│   ├── dashboard.py          # Interface Streamlit
+│   ├── requirements.txt
+│   └── Dockerfile.streamlit
+│
+├── model/
+│   └── random_forest.pkl     # Modelo treinado
+│
+├── notebooks/
+│   ├── 01_eda.ipynb          # Análise exploratória
+│   └── 02_modelagem.ipynb    # Treinamento e avaliação
+│
+├── docker-compose.yml        # Orquestração dos serviços
+├── nginx/
+│   ├── heart-api             # Configuração do proxy para a API
+│   ├── heart-app             # Configuração do proxy para o Streamlit
+│
 ├── README.md
-
+└── LICENSE
 
 ---
 
-## 🧪 Como rodar localmente
+## 🧪 Como Executar Localmente
 
 ```bash
 # Clone o repositório
@@ -83,27 +105,87 @@ python -m venv venv
 source venv/bin/activate  # ou venv\Scripts\activate no Windows
 
 # Instale dependências
-pip install -r requirements.txt
+pip install -r api/requirements.txt
+pip install -r dashboard/requirements.txt
 
-# Execute a API
-uvicorn api.main:app --reload
+# Execute a API localmente
+uvicorn api.main:app --host 0.0.0.0 --port 8000
 
 # Execute a interface
-streamlit run app/dashboard.py
+streamlit run dashboard/dashboard.py
+````
+
+---
+
+## 🐳 Execução com Docker
+
+```bash
+# Build e inicialização dos containers
+docker compose up -d
+
+# Verificar serviços ativos
+docker ps
+
+# API acessível em:
+# http://localhost:8000/docs
+
+# Dashboard acessível em:
+# http://localhost:8501
 ```
----
-
-📌 Status do Projeto
-✅ EDA 
-✅ Modelagem 
-✅ Avaliação 
-🔜 Deploy 
-🔜 Interface 
-🔜 Docker
 
 ---
 
-📄 Licença
-Este projeto está licenciado sob a MIT License.
+## ☁️ Deploy em Produção (AWS EC2)
 
+A aplicação completa roda em:
+
+* **Ubuntu 24.04 (EC2 Instance)**
+* **Nginx** como proxy reverso
+* **HTTPS (Let’s Encrypt)**
+* **Elastic IP fixo**: `3.132.89.3`
+* **Domínios configurados via GoDaddy:**
+
+  * `https://api.heartdiseaseapp.com`
+  * `https://app.heartdiseaseapp.com`
+
+---
+
+## 🧱 Infraestrutura de Produção
+
+A aplicação está hospedada em um ambiente **containerizado e seguro na AWS EC2**, utilizando **Nginx como proxy reverso** e **certificados HTTPS automáticos (Let’s Encrypt)**.  
+O fluxo de requisições segue a arquitetura abaixo:
+
+<p align="center">
+  <img src="assets/ifra.prod.png" alt="Arqiotetira de Produção" width="750"/>
+</p>
+
+
+---
+
+## 📈 Status do Projeto
+
+| Etapa               | Status        |
+| ------------------- | ------------- |
+| EDA                 | ✅ Concluída   |
+| Modelagem           | ✅ Concluída   |
+| Avaliação           | ✅ Concluída   |
+| Deploy API          | ✅ Online      |
+| Interface Streamlit | ✅ Online      |
+| Docker e AWS        | ✅ Em produção |
+| Nginx + SSL         | ✅ Ativo       |
+
+---
+
+## 📄 Licença
+
+Este projeto está licenciado sob a **MIT License**.
+Sinta-se à vontade para utilizar, modificar e redistribuir com os devidos créditos.
+
+---
+
+### 👨‍💻 Autor
+
+**Ariel Soares**
+Desenvolvedor e pesquisador em *Machine Learning*, interessado em aplicações práticas de IA, engenharia de sistemas e ciência de dados.
+📧 Contato: [LinkedIn](https://linkedin.com/in/ari-soares)
 ---
