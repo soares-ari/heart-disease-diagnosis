@@ -174,7 +174,7 @@ A aplicação completa roda em:
 A aplicação está hospedada em um ambiente **containerizado e seguro na AWS EC2**, utilizando **Nginx como proxy reverso** e **certificados HTTPS automáticos (Let’s Encrypt)**.
 O fluxo de requisições segue a arquitetura abaixo:
 
-![Arquitetura de Produção](./assets/infra-prod.png)
+![Arquitetura de Produção](./assets/ifra-prod.png)
 
 ---
 
