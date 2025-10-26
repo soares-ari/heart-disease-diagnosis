@@ -1,5 +1,3 @@
----
-
 # ❤️ Diagnóstico de Doença Cardíaca com Machine Learning
 
 Este projeto implementa um pipeline completo de *Machine Learning* — da análise exploratória ao deploy em produção — para construir uma solução preditiva capaz de identificar a presença de doença cardíaca com base em variáveis clínicas.
@@ -13,18 +11,32 @@ A solução está disponível via **API (FastAPI)** e **interface interativa (St
 
 ---
 
-## 🚑 Desafios: Recuperação e Estabilização do Ambiente
+## 🚑 Recuperação e Estabilização do Ambiente (Disaster Recovery)
 
-Após uma falha crítica no daemon Docker e conflito de versões entre *snap* e *apt*, o ambiente de produção foi completamente restaurado por meio de um **processo de Disaster Recovery estruturado**, incluindo:
+Após duas falhas críticas no ambiente de produção — a primeira envolvendo corrupção do daemon Docker e conflito entre *snap* e *apt*, e a segunda relacionada ao isolamento de rede entre containers e Nginx — foi conduzido um **processo completo de Disaster Recovery em duas fases**, resultando na restauração integral da infraestrutura.
+
+### 🩺 **Fase 1 — Recuperação do Docker Engine e Containers**
 
 * Diagnóstico e correção de *socket corruption* e processos zumbis;
-* Reconfiguração e rebuild de containers com `docker-compose.prod.yml`;
-* Correção do Nginx (`proxy_pass` interno ajustado para containers);
+* Reconfiguração e rebuild completo via `docker-compose.prod.yml`;
+* Correção do `proxy_pass` no Nginx (mapeamento interno para containers);
 * Inserção de rota de *health check* na API (`/` → status operacional);
-* Verificação e restauração completa do SSL (*Let’s Encrypt*);
+* Verificação e restauração do SSL (*Let’s Encrypt*);
 * Testes de conectividade via `curl` e validação HTTPS via navegador.
 
-🟢 **Resultado:** ambiente 100% operacional e estável em produção, com resposta positiva em todos os endpoints e SSL ativo.
+### 🛠 **Fase 2 — Reconstrução de Rede, Proxy e DNS Interno**
+
+* Eliminação de conflito entre `docker-compose.yml` e `docker-compose.prod.yml`;
+* Padronização do Compose e configuração de variáveis globais (`COMPOSE_FILE` e `COMPOSE_PROJECT_NAME`);
+* Desativação do Nginx do host e migração para container próprio (`heart-nginx`);
+* Criação de diretório persistente `./nginx` com configuração isolada (`heart-disease.conf`);
+* Inclusão explícita do Nginx na rede `heart-disease-diagnosis_appnet`;
+* Rebuild limpo com remoção de *orphans* e *networks* antigas;
+* Testes de conectividade interna (`ping`, `curl`) confirmando comunicação entre `heart-api`, `heart-app` e `heart-nginx`;
+* Validação externa HTTPS com certificados válidos e proxy reverso funcional.
+
+🟢 **Resultado final:**
+Ambiente **100% operacional, estável e seguro**, com comunicação interna entre containers, roteamento reverso via Nginx funcional e certificados SSL ativos.
 
 ---
 
@@ -46,7 +58,7 @@ Após uma falha crítica no daemon Docker e conflito de versões entre *snap* e 
 6. **Containerização e Orquestração** com **Docker + Docker Compose**
 7. **Serviço Web** com **Nginx** e **HTTPS automático (Let’s Encrypt)**
 8. **Infraestrutura** em **AWS EC2 (Ubuntu 24.04 + Elastic IP)**
-9. **Disaster Recovery** completo documentado e executado com sucesso ✅
+9. **Disaster Recovery** completo — duas fases concluídas com sucesso ✅
 
 ---
 
@@ -90,22 +102,23 @@ heart-disease-diagnosis/
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-├── dashboard/
+├── app/
 │   ├── dashboard.py          # Interface Streamlit
 │   ├── requirements.txt
-│   └── Dockerfile.streamlit
+│   └── Dockerfile
+│
+├── nginx/
+│   └── heart-disease.conf    # Configuração unificada de proxy reverso
 │
 ├── model/
 │   └── random_forest.pkl     # Modelo treinado
 │
 ├── notebooks/
-│   ├── 01_eda.ipynb          # Análise exploratória
-│   └── 02_modelagem.ipynb    # Treinamento e avaliação
+│   ├── 01_eda.ipynb
+│   └── 02_modelagem.ipynb
 │
-├── docker-compose.yml        # Orquestração dos serviços
-├── nginx/
-│   └── heart-disease.conf    # Configuração unificada de proxy reverso
-│
+├── docker-compose.prod.yml   # Orquestração dos serviços
+├── reset-heart.sh            # Script de rebuild e reset completo
 ├── README.md
 └── LICENSE
 ```
@@ -125,13 +138,13 @@ source venv/bin/activate  # ou venv\Scripts\activate no Windows
 
 # Instale dependências
 pip install -r api/requirements.txt
-pip install -r dashboard/requirements.txt
+pip install -r app/requirements.txt
 
 # Execute a API localmente
 uvicorn api.main:app --host 0.0.0.0 --port 8000
 
 # Execute a interface
-streamlit run dashboard/dashboard.py
+streamlit run app/dashboard.py
 ```
 
 ---
@@ -140,7 +153,7 @@ streamlit run dashboard/dashboard.py
 
 ```bash
 # Build e inicialização dos containers
-docker compose up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 
 # Verificar serviços ativos
 docker ps
@@ -180,16 +193,17 @@ O fluxo de requisições segue a arquitetura abaixo:
 
 ## 📈 Status do Projeto
 
-| Etapa               | Status        |
-| ------------------- | ------------- |
-| EDA                 | ✅ Concluída   |
-| Modelagem           | ✅ Concluída   |
-| Avaliação           | ✅ Concluída   |
-| Deploy API          | ✅ Online      |
-| Interface Streamlit | ✅ Online      |
-| Docker e AWS        | ✅ Em produção |
-| Nginx + SSL         | ✅ Ativo       |
-| Disaster Recovery   | ✅ Concluído   |
+| Etapa                | Status        |
+| -------------------- | ------------- |
+| EDA                  | ✅ Concluída   |
+| Modelagem            | ✅ Concluída   |
+| Avaliação            | ✅ Concluída   |
+| Deploy API           | ✅ Online      |
+| Interface Streamlit  | ✅ Online      |
+| Docker e AWS         | ✅ Em produção |
+| Nginx + SSL          | ✅ Ativo       |
+| Disaster Recovery F1 | ✅ Concluído   |
+| Disaster Recovery F2 | ✅ Concluído   |
 
 ---
 
